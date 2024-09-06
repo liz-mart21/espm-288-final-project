@@ -1,0 +1,204 @@
+```{r, message = FALSE}
+library(stars)
+library(gdalcubes)
+library(leaflet.extras2)
+library(terra)
+remotes::install_github("rstudio/leaflet")
+library(leaflet)
+```
+
+# Aden City, Yemen
+```{r}
+box_yemen <- c(xmin = 43.5, ymin = 12.2, xmax = 45.5, ymax = 13.5)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_yemen) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_yemen[1], right = box_yemen[3],
+                                top = box_yemen[4], bottom = box_yemen[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+yemen2 <- raster_cube(col,cube)
+raster <- st_as_stars(yemen2)
+
+year_2017 <- slice_time(yemen2, "2017-01-01") |> st_as_stars()
+year_2021 <- slice_time(yemen2, "2021-01-01") |> st_as_stars()
+
+yemen <- leaflet() |>
+  addMapPane("right", zIndex = 0) |>
+  addMapPane("left", zIndex = 0) |>
+  addTiles(group = "base", layerId = "baseid1", options = pathOptions(pane = "right")) |>
+  addTiles(group = "base", layerId = "baseid2", options = pathOptions(pane = "left")) |>
+  addRasterImage(x = rast(year_2021), options = leafletOptions(pane = "right"), group = "2021") |>
+  addRasterImage(x = rast(year_2017), options = leafletOptions(pane = "left"), group = "2017") |>
+  addLayersControl(overlayGroups = c("2021", "2017")) |>
+  addSidebyside(layerId = "sidecontrols",
+                rightId = "baseid1",
+                leftId = "baseid2")
+yemen
+```
+
+# Bossaso City, Somalia
+```{r}
+box_somalia <- c(xmin = 49.2, ymin = 11.2, xmax = 49.8, ymax = 11.5)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_somalia) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_somalia[1], right = box_somalia[3],
+                                top = box_somalia[4], bottom = box_somalia[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+somalia <- raster_cube(col,cube)
+raster <- st_as_stars(somalia)
+
+year_2017 <- slice_time(somalia, "2017-01-01") |> st_as_stars()
+year_2021 <- slice_time(somalia, "2021-01-01") |> st_as_stars()
+
+somalia <- leaflet() |>
+  addMapPane("right", zIndex = 0) |>
+  addMapPane("left", zIndex = 0) |>
+  addTiles(group = "base", layerId = "baseid1", options = pathOptions(pane = "right")) |>
+  addTiles(group = "base", layerId = "baseid2", options = pathOptions(pane = "left")) |>
+  addRasterImage(x = rast(year_2021), options = leafletOptions(pane = "right"), group = "2021") |>
+  addRasterImage(x = rast(year_2017), options = leafletOptions(pane = "left"), group = "2017") |>
+  addLayersControl(overlayGroups = c("2021", "2017")) |>
+  addSidebyside(layerId = "sidecontrols",
+                rightId = "baseid1",
+                leftId = "baseid2")
+somalia
+```
+
+
+# Khartoum City, Sudan
+
+```{r}
+box_sudan <- c(xmin = 32.4, ymin = 15.4, xmax = 33.0, ymax = 15.8)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_sudan) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_sudan[1], right = box_sudan[3],
+                                top = box_sudan[4], bottom = box_sudan[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+sudan <- raster_cube(col,cube)
+raster <- st_as_stars(sudan)
+
+year_2017 <- slice_time(sudan, "2017-01-01") |> st_as_stars()
+year_2021 <- slice_time(sudan, "2021-01-01") |> st_as_stars()
+
+sudan <- leaflet() |>
+  addMapPane("right", zIndex = 0) |>
+  addMapPane("left", zIndex = 0) |>
+  addTiles(group = "base", layerId = "baseid1", options = pathOptions(pane = "right")) |>
+  addTiles(group = "base", layerId = "baseid2", options = pathOptions(pane = "left")) |>
+  addRasterImage(x = rast(year_2021), options = leafletOptions(pane = "right"), group = "2021") |>
+  addRasterImage(x = rast(year_2017), options = leafletOptions(pane = "left"), group = "2017") |>
+  addLayersControl(overlayGroups = c("2021", "2017")) |>
+  addSidebyside(layerId = "sidecontrols",
+                rightId = "baseid1",
+                leftId = "baseid2")
+sudan
+```
+
+
+# Djibouti City, Djibouti
+```{r}
+box_djibouti <- c(xmin = 41.9, ymin = 11.4, xmax = 43.1, ymax = 12.1)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_djibouti) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_djibouti[1], right = box_djibouti[3],
+                                top = box_djibouti[4], bottom = box_djibouti[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+djibouti <- raster_cube(col,cube)
+raster <- st_as_stars(djibouti)
+
+year_2017 <- slice_time(djibouti, "2017-01-01") |> st_as_stars()
+year_2021 <- slice_time(djibouti, "2021-01-01") |> st_as_stars()
+
+djibouti <- leaflet() |>
+  addMapPane("right", zIndex = 0) |>
+  addMapPane("left", zIndex = 0) |>
+  addTiles(group = "base", layerId = "baseid1", options = pathOptions(pane = "right")) |>
+  addTiles(group = "base", layerId = "baseid2", options = pathOptions(pane = "left")) |>
+  addRasterImage(x = rast(year_2021), options = leafletOptions(pane = "right"), group = "2021") |>
+  addRasterImage(x = rast(year_2017), options = leafletOptions(pane = "left"), group = "2017") |>
+  addLayersControl(overlayGroups = c("2021", "2017")) |>
+  addSidebyside(layerId = "sidecontrols",
+                rightId = "baseid1",
+                leftId = "baseid2")
+djibouti
+```
+
+# Addis Ababa, Ethiopia
+```{r}
+box_ethiopia <- c(xmin = 38.7, ymin = 8.9, xmax = 38.9, ymax = 9.1)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_ethiopia) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_ethiopia[1], right = box_ethiopia[3],
+                                top = box_ethiopia[4], bottom = box_ethiopia[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+ethiopia <- raster_cube(col,cube)
+raster <- st_as_stars(ethiopia)
+
+year_2017 <- slice_time(ethiopia, "2017-01-01") |> st_as_stars()
+year_2021 <- slice_time(ethiopia, "2021-01-01") |> st_as_stars()
+
+ethiopia <- leaflet() |>
+  addMapPane("right", zIndex = 0) |>
+  addMapPane("left", zIndex = 0) |>
+  addTiles(group = "base", layerId = "baseid1", options = pathOptions(pane = "right")) |>
+  addTiles(group = "base", layerId = "baseid2", options = pathOptions(pane = "left")) |>
+  addRasterImage(x = rast(year_2021), options = leafletOptions(pane = "right"), group = "2021") |>
+  addRasterImage(x = rast(year_2017), options = leafletOptions(pane = "left"), group = "2017") |>
+  addLayersControl(overlayGroups = c("2021", "2017")) |>
+  addSidebyside(layerId = "sidecontrols",
+                rightId = "baseid1",
+                leftId = "baseid2")
+ethiopia
+```

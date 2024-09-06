@@ -1,0 +1,245 @@
+```{r, message = FALSE}
+library(rstac)
+library(gdalcubes)
+library(stars)
+library(tidyverse)
+library(spData)
+library(sf)
+library(RColorBrewer)
+library(tmap)
+```
+
+# Background
+The distribution of *Anopheles stephensi* throughout the Horn of Africa has caused for major public health concerns as incidence of urban malaria increases, with the possibility of spreading throughout sub-Saharan Africa. Specifically, the mosquito *Anopheles stephensi* is a vector for *Plasmodium falciparum* and *Plasmodium vivax*, thus further intensifying the public health threat. Urbanization has proved to be a driving cause of the spread of urban malaria due to the lack of piped water, standing water sources (prime mosquito breeding habitat), and lack of basic health services. These shifts in land cover often places refugees and displaced individuals, as well as other vulnerable populations, in proximity to the infected mosquitoes and consequently, urban malaria. 
+
+Sources:
+    1. [Public health impact of the spread of Anopheles stephensi in the WHO Eastern Mediterranean Region countries in Horn of Africa and Yemen: need for integrated vector surveillance and control](https://malariajournal.biomedcentral.com/articles/10.1186/s12936-023-04545-y)
+    2. [Urban Malaria: Understanding its Epidemiology, Ecology, and Transmission across Seven Diverse ICEMR Network Sites](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4574269/)
+    3. [Urbanization, malaria transmission and disease burden in Africa](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3130901/)
+
+
+
+# Selected Cities
+The following cities are included in Al-Eryani, et al. 2023 and will be used in this project: Aden City, Yemen; Bossaso City, Somalia; Khartoum City, Sudan; Djibouti City, Djibouti; Addis Ababa, Ethiopia. 
+
+Land use will be visualized from 2017 - 2021 using [Microsoft Planetary Computer 10m Annual Land Use Land Cover (9-class) V2](https://planetarycomputer.microsoft.com/dataset/io-lulc-annual-v02#overview).
+
+The data is classified by the following values: 
+{'No Data': 0,
+ 'Water': 1,
+ 'Trees': 2,
+ 'Flooded vegetation': 4,
+ 'Crops': 5,
+ 'Built area': 7,
+ 'Bare ground': 8,
+ 'Snow/ice': 9,
+ 'Clouds': 10,
+ 'Rangeland': 11}
+
+**Slider bar visualizations are in "sliderbar_terra" due to complications with the use of tmap and terra within same qmd**
+
+**Thank you for a great semester, I learned a lot!**
+
+
+# 1. Aden City, Yemen
+```{r}
+box_yemen <- c(xmin = 43.5, ymin = 12.2, xmax = 45.5, ymax = 13.5)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_yemen) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_yemen[1], right = box_yemen[3],
+                                top = box_yemen[4], bottom = box_yemen[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+# assigning colors to values
+colors <- brewer.pal(10, "Paired")
+
+# gif
+gif_yemen <- raster_cube(col,cube) |>
+  gdalcubes::animate(col = colors, fps = 0.5,
+          save_as = "yemen.gif")
+gif_yemen
+```
+
+```{r}
+# tmap
+# visualize specific pixels of difference between the years 2017 and 2018 in Aden City, Yemen
+yemen2 <- raster_cube(col,cube)
+raster <- st_as_stars(yemen2)
+
+year_2017_stars <- slice_time(yemen2, "2017-01-01") |> st_as_stars()
+year_2021_stars <- slice_time(yemen2, "2021-01-01") |> st_as_stars()
+
+st_dimensions(year_2017_stars) <- st_dimensions(year_2021_stars)
+diff <- year_2017_stars - year_2021_stars
+tmap_mode("view")
+tm_shape(diff) + tm_raster() + tm_borders() 
+```
+
+# Bossaso City, Somalia
+```{r}
+box_somalia <- c(xmin = 49.2, ymin = 11.2, xmax = 49.8, ymax = 11.5)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_somalia) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_somalia[1], right = box_somalia[3],
+                                top = box_somalia[4], bottom = box_somalia[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+# gif
+gif_somalia <- raster_cube(col,cube) |>
+  gdalcubes::animate(col = colors, fps = 0.5,
+          save_as = "somalia.gif")
+gif_somalia
+```
+```{r}
+# tmap
+somalia <- raster_cube(col,cube)
+raster <- st_as_stars(somalia)
+
+year_2017_stars <- slice_time(somalia, "2017-01-01") |> st_as_stars()
+year_2021_stars <- slice_time(somalia, "2021-01-01") |> st_as_stars()
+
+st_dimensions(year_2017_stars) <- st_dimensions(year_2021_stars)
+diff <- year_2017_stars - year_2021_stars
+tmap_mode("view")
+tm_shape(diff) + tm_raster() + tm_borders() 
+```
+
+# Khartoum City, Sudan
+```{r}
+box_sudan <- c(xmin = 32.4, ymin = 15.4, xmax = 33.0, ymax = 15.8)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_sudan) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_sudan[1], right = box_sudan[3],
+                                top = box_sudan[4], bottom = box_sudan[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+# gif
+gif_sudan <- raster_cube(col,cube) |>
+  gdalcubes::animate(col = colors, fps = 0.5,
+          save_as = "sudan.gif")
+gif_sudan
+```
+```{r}
+# tmap
+sudan <- raster_cube(col,cube)
+raster <- st_as_stars(sudan)
+
+year_2017_stars <- slice_time(sudan, "2017-01-01") |> st_as_stars()
+year_2021_stars <- slice_time(sudan, "2021-01-01") |> st_as_stars()
+
+st_dimensions(year_2017_stars) <- st_dimensions(year_2021_stars)
+diff <- year_2017_stars - year_2021_stars
+tmap_mode("view")
+tm_shape(diff) + tm_raster() + tm_borders() 
+```
+
+
+# Djibouti City, Djibouti
+```{r}
+box_djibouti <- c(xmin = 41.9, ymin = 11.4, xmax = 43.1, ymax = 12.1)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_djibouti) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_djibouti[1], right = box_djibouti[3],
+                                top = box_djibouti[4], bottom = box_djibouti[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+# gif
+gif_djibouti <- raster_cube(col,cube) |>
+  gdalcubes::animate(col = colors, fps = 0.5,
+          save_as = "djibouti.gif")
+gif_djibouti
+```
+
+```{r}
+# tmap
+djibouti <- raster_cube(col,cube)
+raster <- st_as_stars(djibouti)
+
+year_2017_stars <- slice_time(djibouti, "2017-01-01") |> st_as_stars()
+year_2021_stars <- slice_time(djibouti, "2021-01-01") |> st_as_stars()
+
+st_dimensions(year_2017_stars) <- st_dimensions(year_2021_stars)
+diff <- year_2017_stars - year_2021_stars
+tmap_mode("view")
+tm_shape(diff) + tm_raster() + tm_borders() 
+```
+
+# Addis Ababa, Ethiopia
+```{r}
+box_ethiopia <- c(xmin = 38.7, ymin = 8.9, xmax = 38.9, ymax = 9.1)
+
+items <-  
+  stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+  stac_search(collections = "io-lulc-annual-v02",
+              bbox = box_ethiopia) |>
+  post_request() |>
+  items_sign(sign_planetary_computer()) # use this data to create virtual cube 
+
+col <- stac_image_collection(items$features, asset_names = c("data"))
+
+cube <- cube_view(srs ="EPSG:4326",
+                  extent = list(t0 = "2017-01-01", t1 = "2021-01-01",
+                                left = box_ethiopia[1], right = box_ethiopia[3],
+                                top = box_ethiopia[4], bottom = box_ethiopia[2]),
+                  nx = 500, ny = 500, dt = "P1Y") # slice per year
+
+# gif
+gif_ethiopia <- raster_cube(col,cube) |>
+  gdalcubes::animate(col = colors, fps = 0.5,
+          save_as = "sudan.gif")
+gif_ethiopia
+```
+```{r}
+# tmap
+ethiopia <- raster_cube(col,cube)
+raster <- st_as_stars(ethiopia)
+
+year_2017_stars <- slice_time(ethiopia, "2017-01-01") |> st_as_stars()
+year_2021_stars <- slice_time(ethiopia, "2021-01-01") |> st_as_stars()
+
+st_dimensions(year_2017_stars) <- st_dimensions(year_2021_stars)
+diff <- year_2017_stars - year_2021_stars
+tmap_mode("view")
+tm_shape(diff) + tm_raster() + tm_borders() 
+```
+
